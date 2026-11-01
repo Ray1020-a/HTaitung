@@ -157,6 +157,15 @@ h1, h2, h3, p { margin: 0; }
   border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px;
 }
 .actions a:hover { border-color: var(--accent); }
+.group-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  padding: 8px 4px 0; font-weight: 700; font-size: 15px;
+}
+.group-head span:last-child { font-size: 12px; font-weight: 400; color: var(--muted); }
+.station {
+  width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; border: 2px solid #1f2a2e; font-size: 17px; box-shadow: 0 1px 5px rgba(0,0,0,.4);
+}
 .empty { text-align: center; padding: 48px 16px; color: var(--muted); display: grid; gap: 12px; justify-items: center; }
 
 /* ---------- Map ---------- */
@@ -222,3 +231,4 @@ h1, h2, h3, p { margin: 0; }
   .viewbar button { border: 0; background: none; font-size: 15px; cursor: pointer; color: var(--muted); }
   .viewbar button.on { color: var(--accent); font-weight: 700; }
 }
+.dist { font-weight: 600; color: var(--text); }

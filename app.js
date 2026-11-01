@@ -16,6 +16,17 @@
     { key: 'spa',  label: '水療／按摩', match: ['水療中心', '按摩水療', '溫泉', '水療及健身俱樂部'] },
   ];
   const TAITUNG = [22.72, 121.08];
+  const STATION = [22.79377, 121.12318]; // 台東火車站
+
+  // 兩點間距離（公里）
+  function distKm([lat1, lng1], [lat2, lng2]) {
+    const R = 6371, rad = Math.PI / 180;
+    const dLat = (lat2 - lat1) * rad, dLng = (lng2 - lng1) * rad;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  const fmtKm = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`);
+  let regionRank = {};
 
   // ---------- 狀態 ----------
   const state = {
@@ -103,6 +114,7 @@
           gmap: safeUrl(d['Google地圖']),
           // 貝氏平均：評論少的高分不會壓過評論多的
           score: rating == null ? 0 : (rating * reviews + 4.3 * 20) / (reviews + 20),
+          dist: distKm(STATION, [d['緯度'], d['經度']]),
         };
         item.search = [item.name, item.address, item.region, tokens.join(' ')].join(' ').toLowerCase();
         item.marker = L.marker([item.lat, item.lng], { icon: pinIcon(primary.hex) })
@@ -144,10 +156,34 @@
       ${img}
       <div class="card-body">
         <h4>${esc(it.name)}</h4>
-        <div class="meta">${tagHtml(it)}${fmtRating(it)}<span>· ${esc(it.region)}</span></div>
+        <div class="meta">${tagHtml(it)}${fmtRating(it)}<span>· ${esc(it.region)}</span>${state.sort === 'station' ? `<span class="dist">🚉 ${fmtKm(it.dist)}</span>` : ''}</div>
         <div class="addr" title="${esc(it.address)}">${esc(it.address)}</div>
         <div class="actions">${actionsHtml(it)}</div>
       </div></li>`;
+  }
+
+  function groupedHtml(items) {
+    const counts = {};
+    items.forEach((it) => { counts[it.region] = (counts[it.region] || 0) + 1; });
+    let html = '', cur = null;
+    for (const it of items) {
+      if (it.region !== cur) {
+        cur = it.region;
+        html += `<li class="group-head"><span>${esc(cur)}</span><span>${counts[cur]} 間・距車站 ${fmtKm(it.dist)} 起</span></li>`;
+      }
+      html += cardHtml(it);
+    }
+    return html;
+  }
+
+  function computeRegionRank() {
+    const by = {};
+    data.forEach((it) => (by[it.region] ||= []).push(it.dist));
+    const med = Object.fromEntries(Object.entries(by).map(([r, ds]) => {
+      ds.sort((a, b) => a - b);
+      return [r, ds[Math.floor(ds.length / 2)]];
+    }));
+    Object.keys(med).sort((a, b) => med[a] - med[b]).forEach((r, i) => { regionRank[r] = i; });
   }
 
   function matches(it, skip) {
@@ -165,6 +201,8 @@
 
   const sorters = {
     score: (a, b) => b.score - a.score,
+    // 火車站擴散排序：區域依「離車站的中位距離」由近到遠，區域內再依距離由近到遠
+    station: (a, b) => (regionRank[a.region] - regionRank[b.region]) || (a.dist - b.dist),
     rating: (a, b) => (b.rating ?? -1) - (a.rating ?? -1) || b.reviews - a.reviews,
     reviews: (a, b) => b.reviews - a.reviews,
     name: (a, b) => a.name.localeCompare(b.name, 'zh-Hant'),
@@ -180,7 +218,7 @@
     const bounds = map.getBounds();
     filtered = (state.inBounds ? base.filter((it) => bounds.contains([it.lat, it.lng])) : base).sort(sorters[state.sort]);
 
-    $('#list').innerHTML = filtered.map(cardHtml).join('');
+    $('#list').innerHTML = state.sort === 'station' ? groupedHtml(filtered) : filtered.map(cardHtml).join('');
     $('#count').textContent = `${filtered.length} 間${state.inBounds ? '（地圖範圍內）' : ''}`;
     $('#applyCount').textContent = filtered.length;
     $('#empty').hidden = filtered.length > 0;
@@ -332,6 +370,13 @@
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((raw) => {
       data = prepare(raw);
+      computeRegionRank();
+      const qsSort = new URLSearchParams(location.search).get('sort');
+      if (qsSort && sorters[qsSort]) { state.sort = qsSort; $('#sort').value = qsSort; }
+      L.marker(STATION, {
+        icon: L.divIcon({ className: '', html: '<div class="station">🚉</div>', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        zIndexOffset: 2000, title: '台東火車站',
+      }).bindTooltip('台東火車站').addTo(map);
       bind();
       apply({ refit: true });
     })
