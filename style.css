@@ -158,7 +158,6 @@ h1, h2, h3, p { margin: 0; }
 }
 .actions a:hover { border-color: var(--accent); }
 .empty { text-align: center; padding: 48px 16px; color: var(--muted); display: grid; gap: 12px; justify-items: center; }
-.more { display: flex; margin: 4px auto 20px; }
 
 /* ---------- Map ---------- */
 .map-wrap { position: relative; }

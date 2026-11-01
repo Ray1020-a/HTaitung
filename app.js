@@ -15,14 +15,13 @@
     { key: 'pool', label: '泳池',      match: ['游泳池'] },
     { key: 'spa',  label: '水療／按摩', match: ['水療中心', '按摩水療', '溫泉', '水療及健身俱樂部'] },
   ];
-  const PAGE = 40;
   const TAITUNG = [22.72, 121.08];
 
   // ---------- 狀態 ----------
   const state = {
     q: '', regions: new Set(), cats: new Set(), feats: new Set(),
     minRating: 0, minReviews: 0, hasPhone: false, hasWeb: false, hasLine: false,
-    inBounds: false, sort: 'score', shown: PAGE,
+    inBounds: false, sort: 'score',
   };
   let data = [];
   let filtered = [];
@@ -171,8 +170,7 @@
     name: (a, b) => a.name.localeCompare(b.name, 'zh-Hant'),
   };
 
-  function apply({ refit = false, keepPage = false } = {}) {
-    if (!keepPage) state.shown = PAGE;
+  function apply({ refit = false } = {}) {
     const base = data.filter((it) => matches(it));
     // 地圖上顯示所有符合篩選者；「只顯示地圖範圍內」只影響列表
     cluster.clearLayers();
@@ -182,12 +180,10 @@
     const bounds = map.getBounds();
     filtered = (state.inBounds ? base.filter((it) => bounds.contains([it.lat, it.lng])) : base).sort(sorters[state.sort]);
 
-    $('#list').innerHTML = filtered.slice(0, state.shown).map(cardHtml).join('');
+    $('#list').innerHTML = filtered.map(cardHtml).join('');
     $('#count').textContent = `${filtered.length} 間${state.inBounds ? '（地圖範圍內）' : ''}`;
     $('#applyCount').textContent = filtered.length;
     $('#empty').hidden = filtered.length > 0;
-    $('#moreBtn').hidden = filtered.length <= state.shown;
-    $('#moreBtn').textContent = `顯示更多（還有 ${filtered.length - state.shown} 間）`;
     updateCounts();
     updateBadge();
   }
@@ -310,7 +306,6 @@
     $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; apply(); });
     $('#resetBtn').addEventListener('click', reset);
     $('#emptyReset').addEventListener('click', reset);
-    $('#moreBtn').addEventListener('click', () => { state.shown += PAGE; apply({ keepPage: true }); });
 
     $('#list').addEventListener('click', (e) => {
       if (e.target.closest('a')) return;
