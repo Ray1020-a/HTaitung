@@ -4,7 +4,7 @@
 
 - 篩選：關鍵字、地區、住宿類型、附設（餐廳／泳池／水療）、最低評分、最少評論數、聯絡方式、只看地圖範圍內
 - 排序：推薦（貝氏平均評分）、評分、評論數、名稱
-- 地圖：Leaflet + MarkerCluster，底圖 OpenStreetMap / CARTO
+- 地圖：Leaflet + MarkerCluster，底圖皆為免 API key 的公開圖磚（OpenStreetMap、HOT、OpenTopoMap、Esri 衛星）
 
 ## 本機預覽
 

@@ -34,11 +34,31 @@
 
   // ---------- 地圖 ----------
   const map = L.map('map', { zoomControl: true, preferCanvas: false }).setView(TAITUNG, 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  }).addTo(map);
-  const cluster = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 45, spiderfyOnMaxZoom: true });
+  // 全部為免 API key 的公開圖磚
+  const OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  const baseLayers = {
+    'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: OSM_ATTR }),
+    '人道地圖 (HOT)': L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      maxZoom: 19, subdomains: 'abc', attribution: `${OSM_ATTR}, Tiles: <a href="https://www.hotosm.org/">HOT</a>`,
+    }),
+    '地形 (OpenTopoMap)': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17, subdomains: 'abc', attribution: `${OSM_ATTR}, SRTM | <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)`,
+    }),
+    '衛星 (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19, attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+    }),
+  };
+  baseLayers['OpenStreetMap'].addTo(map);
+  L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+  const cluster = L.markerClusterGroup({
+    showCoverageOnHover: false, maxClusterRadius: 45, spiderfyOnMaxZoom: true,
+    iconCreateFunction: (c) => {
+      const n = c.getChildCount();
+      const size = n < 10 ? 34 : n < 100 ? 40 : 48;
+      return L.divIcon({ html: `<div>${n}</div>`, className: 'cluster', iconSize: [size, size] });
+    },
+  });
   map.addLayer(cluster);
 
   const pinIcon = (hex, hl) => L.divIcon({
