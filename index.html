@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>台東住宿地圖</title>
+  <meta name="description" content="整理台東市、知本、太麻里的住宿：民宿、飯店、青旅，可依地區、類型、評分篩選並在地圖上查看。">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">⛰</span>
+      <div>
+        <h1>台東住宿地圖</h1>
+        <p class="sub" id="summary">載入中…</p>
+      </div>
+    </div>
+    <div class="search">
+      <input id="q" type="search" placeholder="搜尋名稱、地址、類型…" autocomplete="off" aria-label="搜尋">
+    </div>
+    <button class="btn filter-toggle" id="filterToggle" aria-controls="filters" aria-expanded="false">
+      篩選 <span class="badge" id="filterBadge" hidden>0</span>
+    </button>
+  </header>
+
+  <main class="layout" data-view="list">
+    <aside class="filters" id="filters" aria-label="篩選條件">
+      <div class="filters-head">
+        <h2>篩選</h2>
+        <button class="link" id="resetBtn" type="button">清除全部</button>
+        <button class="close" id="filterClose" type="button" aria-label="關閉">✕</button>
+      </div>
+
+      <section class="group">
+        <h3>地區</h3>
+        <div class="chips" id="regionChips"></div>
+      </section>
+
+      <section class="group">
+        <h3>住宿類型</h3>
+        <div class="chips" id="catChips"></div>
+      </section>
+
+      <section class="group">
+        <h3>附設</h3>
+        <div class="chips" id="featChips"></div>
+      </section>
+
+      <section class="group">
+        <h3>最低評分 <output id="ratingOut">不限</output></h3>
+        <div class="seg" id="ratingSeg">
+          <button type="button" data-v="0" class="on">不限</button>
+          <button type="button" data-v="4">4.0+</button>
+          <button type="button" data-v="4.5">4.5+</button>
+          <button type="button" data-v="4.8">4.8+</button>
+        </div>
+      </section>
+
+      <section class="group">
+        <h3>最少評論數</h3>
+        <div class="seg" id="reviewSeg">
+          <button type="button" data-v="0" class="on">不限</button>
+          <button type="button" data-v="50">50+</button>
+          <button type="button" data-v="200">200+</button>
+          <button type="button" data-v="1000">1000+</button>
+        </div>
+      </section>
+
+      <section class="group">
+        <h3>聯絡方式</h3>
+        <label class="check"><input type="checkbox" id="hasPhone"> 有電話</label>
+        <label class="check"><input type="checkbox" id="hasWeb"> 有網站</label>
+        <label class="check"><input type="checkbox" id="hasLine"> 有 LINE</label>
+      </section>
+
+      <section class="group">
+        <label class="check"><input type="checkbox" id="inBounds"> 只顯示目前地圖範圍內</label>
+      </section>
+
+      <button class="btn primary apply" id="applyBtn" type="button">查看 <span id="applyCount">0</span> 間</button>
+    </aside>
+
+    <section class="results" aria-label="住宿列表">
+      <div class="results-head">
+        <span id="count">0 間</span>
+        <label class="sort">排序
+          <select id="sort">
+            <option value="score">推薦（評分 × 評論數）</option>
+            <option value="rating">評分高→低</option>
+            <option value="reviews">評論數多→少</option>
+            <option value="name">名稱</option>
+          </select>
+        </label>
+      </div>
+      <ul class="list" id="list"></ul>
+      <div class="empty" id="empty" hidden>
+        <p>沒有符合條件的住宿</p>
+        <button class="btn" type="button" id="emptyReset">清除篩選</button>
+      </div>
+      <button class="btn more" id="moreBtn" type="button" hidden>顯示更多</button>
+    </section>
+
+    <section class="map-wrap" aria-label="地圖">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <nav class="viewbar" aria-label="切換檢視">
+    <button type="button" data-view="list" class="on">☰ 列表</button>
+    <button type="button" data-view="map">🗺 地圖</button>
+  </nav>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
